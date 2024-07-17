@@ -3,7 +3,7 @@ from qiskit.circuit.library import RealAmplitudes
 from qiskit.quantum_info import SparsePauliOp
 from qiskit_aer import AerSimulator
 
-sim = AerSimulator()
+sim = AerSimulator(method='statevector', device='GPU')
 # --------------------------
 # Simulating using estimator
 #---------------------------
@@ -70,12 +70,18 @@ print(f"counts for Bell circuit : {job_result[0].data.meas.get_counts()}")
 job2 = sampler.run([(pqc, theta1), (pqc2, theta2)])
 job_result = job2.result()
 print(f"counts for parameterized circuit : {job_result[0].data.meas.get_counts()}")
+import os
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
+
+ibm_quantum_token = os.getenv("IBM_QUANTUM_TOKEN")
 # --------------------------------------------------
 # Simulating with noise model from actual hardware
 # --------------------------------------------------
 from qiskit_ibm_runtime import QiskitRuntimeService
-provider = QiskitRuntimeService(channel='ibm_quantum', token="set your own token here")
+provider = QiskitRuntimeService(channel='ibm_quantum', token=ibm_quantum_token)
 backend = provider.get_backend("ibm_kyoto")
 
 # create sampler from the actual backend
@@ -86,3 +92,5 @@ bell_t = transpile(bell, AerSimulator(basis_gates=["ecr", "id", "rz", "sx"]), op
 job3 = sampler.run([bell_t], shots=128)
 job_result = job3.result()
 print(f"counts for Bell circuit w/noise: {job_result[0].data.meas.get_counts()}")
+
+print("test successful")
